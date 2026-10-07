@@ -1,30 +1,48 @@
-// Задание 2: Функции работы с каталогом
-// Управление данными без мутации исходных объектов (иммутабельность)
+import { Book, BookFilter } from "./task1-types";
 
-// TODO 0: Импортируйте типы Book и Catalog из файла task1-types.ts
-import { Book, Catalog } from "./task1-types";
+// TODO 1: Создайте фильтр по имени автора
+// Возвращает: функцию типа BookFilter, которая возвращает true, если автор есть в списке book.authors
+// Подсказка: используйте метод массива .some() и приведите строки к нижнему регистру для нечувствительного поиска.
+export const filterByAuthor = (authorName: string): BookFilter => {
+  const lowerAuthor = authorName.toLowerCase().trim();
 
-// TODO 1: Добавьте книгу в каталог
-// Возвращает: новый объект Catalog, содержащий все старые книги и новую
-// Подсказка: используйте оператор расширения (spread) `...`, чтобы создать новый объект, а не изменять существующий. Ключом должно быть свойство book.id.
-export function addBook(catalog: Catalog, book: Book): Catalog {
-  return {
-    ...catalog,
-    [book.id]: book
+  return (book: Book) => {
+    if (!book.authors || !Array.isArray(book.authors)) return false;
+
+    return book.authors.some(author => 
+      author && author.toLowerCase().trim().includes(lowerAuthor)
+    );
   };
-}
+};
 
-// TODO 2: Удалите книгу из каталога по id
-// Возвращает: новый объект Catalog без указанной книги
-// Подсказка: используйте деструктуризацию объекта с вычисляемым ключом и rest-параметром:
-export function removeBook(catalog: Catalog, id: string): Catalog {
-  const { [id]: removedBook, ...remainingCatalog } = catalog;
-  return remainingCatalog;
-}
+// TODO 2: Создайте фильтр по минимальному году издания
+// Возвращает: функцию типа BookFilter, которая возвращает true, если book.year >= year
+// Подсказка: не забудьте проверить, что book.year !== undefined, иначе будет ошибка.
+export const filterByMinYear = (year: number): BookFilter => {
+  return (book: Book) => {
+    if (book.year === undefined || book.year === null || typeof book.year !== 'number') {
+      return false;
+    }
 
-// TODO 3: Найдите книгу в каталоге по id
-// Возвращает: объект Book, если книга найдена, или undefined, если её нет
-export function getBook(catalog: Catalog, id: string): Book | undefined {
-  
-  return catalog[id];
-}
+    return book.year >= year;
+  };
+};
+
+// TODO 3: Создайте фильтр по минимальному рейтингу
+// Возвращает: функцию типа BookFilter, которая возвращает true, если book.rating >= rating
+export const filterByMinRating = (rating: number): BookFilter => {
+  return (book: Book) => {
+    if (book.rating === undefined || book.rating === null) return false;
+
+    return book.rating >= rating;
+  };
+};
+
+// TODO 4: Примените массив фильтров к массиву книг
+// Возвращает: новый массив Book[], содержащий только те книги, которые проходят ВСЕ фильтры
+// Подсказка: используйте метод массива .filter() в сочетании с .every().
+export const applyFilters = (books: Book[], filters: BookFilter[]): Book[] => {
+  if (!filters || filters.length === 0) return books;
+
+  return books.filter(book => filters.every(filter => filter(book)));
+};
